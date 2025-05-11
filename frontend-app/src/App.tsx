@@ -6,7 +6,7 @@ import './styles.css';
 
 // Componentes de diseño
 import Navbar from './components/layout/Navbar';
-import Home from './components/layout/Home';
+import Welcome from './components/layout/Welcome';
 import BoardAdmin from './components/layout/BoardAdmin';
 import BoardModerator from './components/layout/BoardModerator';
 import BoardUser from './components/layout/BoardUser';
@@ -35,11 +35,13 @@ const App: React.FC = () => {
         <Navbar />
         <div className="container mt-3">
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/home" element={<Home />} />
+            <Route path="/" element={<Navigate to="/login" />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/welcome" element={
+              currentUser ? <Welcome /> : <Navigate to="/login" />
+            } />
             <Route 
               path="/user" 
               element={currentUser ? <BoardUser /> : <Navigate to="/login" />} 

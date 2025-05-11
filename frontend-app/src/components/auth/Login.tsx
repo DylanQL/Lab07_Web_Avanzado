@@ -25,11 +25,9 @@ const Login: React.FC = () => {
     const { username, password } = formValue;
 
     setMessage('');
-    setLoading(true);
-
-    AuthService.login({ username, password })
+    setLoading(true);    AuthService.login({ username, password })
       .then(() => {
-        navigate('/profile');
+        navigate('/welcome');
         window.location.reload();
       })
       .catch((error) => {

@@ -26,16 +26,10 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="navbar navbar-expand navbar-dark bg-dark">
-      <Link to={"/"} className="navbar-brand">
+    <nav className="navbar navbar-expand navbar-dark bg-dark">      <Link to={currentUser ? "/welcome" : "/login"} className="navbar-brand">
         Mi Aplicación
       </Link>
       <div className="navbar-nav mr-auto">
-        <li className="nav-item">
-          <Link to={"/home"} className="nav-link">
-            Home
-          </Link>
-        </li>
 
         {showModeratorBoard && (
           <li className="nav-item">
@@ -60,10 +54,13 @@ const Navbar: React.FC = () => {
             </Link>
           </li>
         )}
-      </div>
-
-      {currentUser ? (
+      </div>      {currentUser ? (
         <div className="navbar-nav ml-auto">
+          <li className="nav-item">
+            <Link to={"/welcome"} className="nav-link">
+              Inicio
+            </Link>
+          </li>
           <li className="nav-item">
             <Link to={"/profile"} className="nav-link">
               {currentUser.username}
@@ -75,7 +72,7 @@ const Navbar: React.FC = () => {
             </a>
           </li>
         </div>
-      ) : (
+      ): (
         <div className="navbar-nav ml-auto">
           <li className="nav-item">
             <Link to={"/login"} className="nav-link">
