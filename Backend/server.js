@@ -19,9 +19,9 @@ import userRoutes from "./routes/user.routes.js";
 // Crea una instancia de la aplicación Express
 const app = express();
 
-// Configura las opciones de CORS para permitir acceso desde el frontend en cualquier puerto
+// Configura las opciones de CORS para permitir acceso desde cualquier origen
 const corsOptions = {
-    origin: ["http://localhost:3001", "http://localhost:8080", "http://localhost:3000"],
+    origin: "*", // Permite solicitudes desde cualquier origen
     credentials: true
 };
 
