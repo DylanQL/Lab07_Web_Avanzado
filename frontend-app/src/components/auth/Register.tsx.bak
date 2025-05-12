@@ -1,0 +1,251 @@
+import React, { useState } from 'react';
+import { Formik, Field, Form, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
+import AuthService from '../../services/auth.service';
+
+const Register: React.FC = () => {
+  const [successful, setSuccessful] = useState(false);
+  const [message, setMessage] = useState('');
+  const [selectedRole, setSelectedRole] = useState('user');
+  
+  // Función para obtener la descripción detallada del rol
+  const getRoleDescription = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return 'Los administradores tienen acceso completo al sistema. Pueden gestionar usuarios, contenido y configuraciones del sistema.';
+      case 'moderator':
+        return 'Los moderadores pueden gestionar contenido, aprobar publicaciones de usuarios y mantener el orden en la plataforma.';
+      default:
+        return 'Los usuarios estándar pueden acceder a funcionalidades básicas como ver contenido y gestionar su perfil.';
+    }
+  };
+
+  const initialValues = {
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    role: 'user' // Valor por defecto: usuario regular
+  };
+
+  const validationSchema = Yup.object().shape({    
+    username: Yup.string()
+      .test(
+        'len',
+        'El usuario debe tener entre 3 y 20 caracteres.',
+        (val): boolean => Boolean(val && val.length >= 3 && val.length <= 20)
+      )
+      .required('Este campo es obligatorio!'),
+    email: Yup.string()
+      .email('Este no es un email válido.')
+      .required('Este campo es obligatorio!'),    
+    password: Yup.string()
+      .test(
+        'len',
+        'La contraseña debe tener entre 6 y 40 caracteres.',
+        (val): boolean => Boolean(val && val.length >= 6 && val.length <= 40)
+      )
+      .required('Este campo es obligatorio!'),    
+    confirmPassword: Yup.string()
+      .oneOf([Yup.ref('password'), undefined], 'Las contraseñas no coinciden')
+      .required('Confirmar contraseña es obligatorio'),
+    role: Yup.string().required('Seleccione un tipo de cuenta')
+  });
+
+  const handleRegister = (formValue: { username: string; email: string; password: string; role: string; confirmPassword: string }) => {
+    const { username, email, password } = formValue;
+
+    setMessage('');
+    setSuccessful(false);
+
+    // Crear un array de roles basado en la selección del usuario actual
+    const roles = selectedRole !== 'user' ? [selectedRole] : undefined;
+
+    AuthService.register({
+      username,
+      email,
+      password,
+      roles
+    })
+      .then((response) => {
+        setMessage(response.data.message);
+        setSuccessful(true);
+      })
+      .catch((error) => {
+        const resMessage =
+          (error.response &&
+            error.response.data &&
+            error.response.data.message) ||
+          error.message ||
+          error.toString();
+
+        setMessage(resMessage);
+        setSuccessful(false);
+      });
+  };
+
+  return (
+    <div className="col-md-12">
+      <div className="card card-container">
+        <img
+          src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
+          alt="profile-img"
+          className="profile-img-card"
+        />
+
+        <Formik
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          onSubmit={handleRegister}
+        >
+          {({ values, setFieldValue }) => (
+            <Form>
+            {!successful && (
+              <div>
+                <div className="form-group">
+                  <label htmlFor="username">Usuario</label>
+                  <Field name="username" type="text" className="form-control" />
+                  <ErrorMessage
+                    name="username"
+                    component="div"
+                    className="alert alert-danger"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="email">Email</label>
+                  <Field name="email" type="email" className="form-control" />
+                  <ErrorMessage
+                    name="email"
+                    component="div"
+                    className="alert alert-danger"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="password">Contraseña</label>
+                  <Field name="password" type="password" className="form-control" />
+                  <ErrorMessage
+                    name="password"
+                    component="div"
+                    className="alert alert-danger"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="confirmPassword">Confirmar Contraseña</label>
+                  <Field name="confirmPassword" type="password" className="form-control" />
+                  <ErrorMessage
+                    name="confirmPassword"
+                    component="div"
+                    className="alert alert-danger"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="role">
+                    <i className="bi bi-person-badge me-1"></i>
+                    <strong>Seleccione su Tipo de Cuenta</strong>
+                  </label>
+                  <Field 
+                    as="select" 
+                    name="role" 
+                    className="form-control"
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedRole(e.target.value)}
+                  >
+                    <option value="user">Usuario Estándar</option>
+                    <option value="moderator">Moderador</option>
+                    <option value="admin">Administrador</option>
+                  </Field>
+                  <div className="alert alert-info mt-2 mb-2 py-2 small">
+                    <i className="bi bi-info-circle-fill me-1"></i>
+                    <strong>¿Por qué elegir un tipo de cuenta?</strong>
+                    <p className="mb-0 mt-1">
+                      El tipo de cuenta determina qué acciones podrá realizar en la plataforma. 
+                      Elija el rol que mejor se adapte a sus necesidades.
+                    </p>
+                  </div>
+                  
+                  <div className="role-info mt-2">
+                    <div 
+                      className={`role-badge badge ${selectedRole === 'user' ? 'bg-primary fw-bold' : 'bg-secondary'}`}
+                      onClick={() => {
+                        setSelectedRole('user');
+                        // También actualizamos el valor en el formulario
+                        const selectElement = document.querySelector('select[name="role"]') as HTMLSelectElement;
+                        if (selectElement) selectElement.value = 'user';
+                      }}
+                    >
+                      <i className="bi bi-person-fill me-1"></i> Usuario: Acceso básico
+                    </div>
+                    <div 
+                      className={`role-badge badge ${selectedRole === 'moderator' ? 'bg-success fw-bold' : 'bg-secondary'}`}
+                      onClick={() => {
+                        setSelectedRole('moderator');
+                        // También actualizamos el valor en el formulario
+                        const selectElement = document.querySelector('select[name="role"]') as HTMLSelectElement;
+                        if (selectElement) selectElement.value = 'moderator';
+                      }}
+                    >
+                      <i className="bi bi-shield-check me-1"></i> Moderador: Gestión de contenido
+                    </div>
+                    <div 
+                      className={`role-badge badge ${selectedRole === 'admin' ? 'bg-danger fw-bold' : 'bg-secondary'}`}
+                      onClick={() => {
+                        setSelectedRole('admin');
+                        // También actualizamos el valor en el formulario
+                        const selectElement = document.querySelector('select[name="role"]') as HTMLSelectElement;
+                        if (selectElement) selectElement.value = 'admin';
+                      }}
+                    >
+                      <i className="bi bi-shield-lock-fill me-1"></i> Administrador: Control total
+                    </div>
+                  </div>
+                  
+                  <div className={`role-description p-2 mt-2 border rounded bg-light ${
+                    selectedRole === 'admin' 
+                      ? 'border-danger' 
+                      : selectedRole === 'moderator' 
+                        ? 'border-success' 
+                        : 'border-primary'
+                  }`}>
+                    <div className="d-flex align-items-center mb-1">
+                      <i className={`bi ${
+                        selectedRole === 'admin' 
+                          ? 'bi-shield-lock-fill text-danger' 
+                          : selectedRole === 'moderator' 
+                            ? 'bi-shield-check text-success' 
+                            : 'bi-person-fill text-primary'
+                      } me-2 fs-5`}></i>
+                      <strong>Descripción del rol:</strong>
+                    </div>
+                    <p className="mb-0">{getRoleDescription(selectedRole)}</p>
+                  </div>
+                </div>
+
+                <div className="form-group mt-3">
+                  <button type="submit" className="btn btn-primary btn-block">Registrarse</button>
+                </div>
+              </div>
+            )}
+
+            {message && (
+              <div className="form-group">
+                <div
+                  className={
+                    successful ? "alert alert-success" : "alert alert-danger"
+                  }
+                  role="alert"
+                >
+                  {message}
+                </div>
+              </div>
+            )}
+          </Form>
+        </Formik>
+      </div>
+    </div>
+  );
+};
+
+export default Register;

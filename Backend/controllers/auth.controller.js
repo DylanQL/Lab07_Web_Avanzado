@@ -16,14 +16,15 @@ const { user: User, role: Role } = db;
 // Controlador para el registro de usuarios
 export const signup = async (req, res) => {
     try {
+        console.log("Datos recibidos en signup:", req.body);
+        
         // Extrae los datos enviados en el cuerpo de la solicitud
         const { username, email, password, roles } = req.body;
 
+        console.log("Procesando signup para:", username, email, "con roles:", roles);
+
         // Encripta la contraseña antes de guardarla en la base de datos
         const hashedPassword = await bcrypt.hash(password, 8);
-
-        // Busca el rol "user" en la base de datos para asignarlo por defecto
-        const userRole = await Role.findOne({ where: { name: "user" } });
 
         // Crea un nuevo usuario con los datos proporcionados y la contraseña encriptada
         const user = await User.create({
@@ -32,7 +33,28 @@ export const signup = async (req, res) => {
             password: hashedPassword,
         });
 
-        // Asocia el rol encontrado al usuario (relación muchos a muchos)
+        // Si se especifican roles en la solicitud, los busca en la base de datos
+        if (roles && roles.length > 0) {
+            console.log("Roles a asignar:", roles);
+            const roleObjects = await Role.findAll({
+                where: { name: roles }
+            });
+            console.log("Roles encontrados en BD:", roleObjects.length, roleObjects.map(r => r.name));
+            
+            // Asocia los roles encontrados al usuario
+            if (roleObjects && roleObjects.length > 0) {
+                await user.setRoles(roleObjects);
+                // Devuelve respuesta exitosa
+                console.log("Usuario creado con roles específicos");
+                return res.status(201).json({ 
+                    message: "Usuario registrado exitosamente con roles específicos!" 
+                });
+            }
+        }
+        
+        // Si no hay roles especificados o no se encuentran, asigna el rol de usuario por defecto
+        console.log("Asignando rol de usuario por defecto");
+        const userRole = await Role.findOne({ where: { name: "user" } });
         await user.setRoles([userRole]);
 
         // Devuelve respuesta exitosa

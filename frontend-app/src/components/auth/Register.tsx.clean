@@ -59,33 +59,19 @@ const Register: React.FC = () => {
     setSuccessful(false);
 
     // Crear un array de roles basado en la selección del usuario actual
-    // Los roles deben coincidir exactamente con los definidos en el backend: "user", "admin", "moderator"
-    let rolesToSend = undefined;
-    
-    if (selectedRole !== 'user') {
-      // La constante ROLES en el backend es ["user", "admin", "moderator"]
-      rolesToSend = [selectedRole];
-    }
-    
-    console.log('Intentando registrar usuario con:', {
-      username,
-      email,
-      password: '***', // No logueamos la contraseña por seguridad
-      roles: rolesToSend
-    });
-    
+    const roles = selectedRole !== 'user' ? [selectedRole] : undefined;
+
     AuthService.register({
       username,
       email,
       password,
-      roles: rolesToSend
+      roles
     })
       .then((response) => {
         setMessage(response.data.message);
         setSuccessful(true);
       })
       .catch((error) => {
-        console.error('Error detallado:', error);
         const resMessage =
           (error.response &&
             error.response.data &&

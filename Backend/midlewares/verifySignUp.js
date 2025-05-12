@@ -39,16 +39,21 @@ export const checkDuplicateUsernameOrEmail = async (req, res, next) => {
  * Middleware para verificar si los roles proporcionados existen en la lista de roles permitidos.
  */
 export const checkRolesExisted = (req, res, next) => {
+    console.log('Verificando roles:', req.body.roles);
+    console.log('Roles permitidos:', ROLES);
+    
     // Verificamos si se proporcionaron roles en la solicitud
     if (req.body.roles) {
         // Iteramos sobre cada rol proporcionado
         for (const role of req.body.roles) {
             // Si el rol no existe en la lista de roles permitidos, respondemos con un error
             if (!ROLES.includes(role)) {
-                return res.status(400).json({ message: `¡El rol ${role} no existe!` });
+                console.log(`Rol no válido: ${role}`);
+                return res.status(400).json({ message: `¡El rol ${role} no existe! Los roles permitidos son: ${ROLES.join(', ')}` });
             }
         }
     }
     // Si todos los roles son válidos o no se proporcionaron roles, pasamos al siguiente middleware
+    console.log('Roles verificados correctamente');
     next();
 };

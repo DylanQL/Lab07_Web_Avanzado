@@ -21,12 +21,18 @@ const app = express();
 
 // Configura las opciones de CORS para permitir acceso desde el frontend en cualquier puerto
 const corsOptions = {
-    origin: ["http://localhost:3001", "http://localhost:8080"],
+    origin: ["http://localhost:3001", "http://localhost:8080", "http://localhost:3000"],
     credentials: true
 };
 
 // Aplica el middleware de CORS a la aplicación
 app.use(cors(corsOptions));
+
+// Middleware para mostrar las solicitudes recibidas (para depuración)
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`, req.body);
+    next();
+});
 
 // Middleware para analizar solicitudes con cuerpo en formato JSON
 app.use(express.json());

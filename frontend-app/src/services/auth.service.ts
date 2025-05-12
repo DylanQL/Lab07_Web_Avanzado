@@ -17,7 +17,15 @@ class AuthService {
   }
 
   async register(user: RegisterRequest) {
-    return axios.post(`${API_URL}signup`, user);
+    try {
+      console.log('Sending registration request:', user);
+      const response = await axios.post(`${API_URL}signup`, user);
+      console.log('Registration response:', response);
+      return response;
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    }
   }
 
   getCurrentUser() {
