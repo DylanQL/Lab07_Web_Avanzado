@@ -1,11 +1,12 @@
 // This is a test file to debug connection issues
 import axios from 'axios';
+import API_BASE_URL, { TEST_API_URL } from './config/api.config';
 
 // Test the actual endpoint from our backend
 export async function testConnection() {
   const results = {
-    mainEndpoint: await testEndpoint('http://localhost:8080/api/test/all'),
-    rootEndpoint: await testEndpoint('http://localhost:8080/')
+    mainEndpoint: await testEndpoint(`${TEST_API_URL}all`),
+    rootEndpoint: await testEndpoint(API_BASE_URL.replace('/api', ''))
   };
   
   console.log('Connection test results:', results);
